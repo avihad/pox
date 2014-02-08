@@ -5,6 +5,7 @@ This code is based on the official OpenFlow tutorial code.
 
 from pox.core import core
 import pox.openflow.libopenflow_01 as of
+from pox.lib.addresses import IPAddr, EthAddr
 
 log = core.getLogger()
 
@@ -34,6 +35,7 @@ class Tutorial (object):
 
         packet_in = event.ofp  # packet_in is the OpenFlow packet sent by the switch
 
+        #self.act_like_hub(packet,packet_in)
         self.act_like_switch(packet, packet_in)
 
     def send_packet (self, buffer_id, raw_data, out_port, in_port):
@@ -82,21 +84,24 @@ class Tutorial (object):
         """
         """
         msg = of.ofp_flow_mod()
-        msg.data = packet_in
+        #msg.data = packet_in
         msg.idle_timeout = 10
         msg.hard_timeout = 30
+
         msg.match.dl_src = src_mac
         msg.match.dl_dst = dst_mac
+        msg.match._in_port = packet_in.in_port
         action = of.ofp_action_output(port=out_port)
         msg.actions.append(action)
         log.debug("Instaling flow %s.%i -> %s.%i" % (src_mac, in_port, dst_mac, out_port))
-        return msg
+        self.connection.send(msg)
 
     def act_like_hub (self, packet, packet_in):
         """
         Implement hub-like behavior -- send all packets to all ports besides
         the input port.
         """
+        self.resend_packet(packet_in, of.OFPP_ALL)
 
         # We want to output to all ports -- we do that using the special
         # of.OFPP_FLOOD port as the output port.  (We could have also used
@@ -119,15 +124,18 @@ class Tutorial (object):
         @param packet:  packet.src, packet.dst
         @param packet_in: packet_in.port, packet_in.buffer_id, packet_in.data
         """
-        src_mac = str(packet.src)
-        dst_mac = str(packet.dst)
+        src_mac = EthAddr(packet.src)
+        dst_mac = EthAddr(packet.dst)
         in_port = packet_in.in_port
+
         self.mac_port_mapping[src_mac] = in_port
-        if (dst_mac in self.mac_port_mapping):
+
+
+        if dst_mac in self.mac_port_mapping:
             out_port = self.mac_port_mapping[dst_mac]
-            msg = self.install_rule(src_mac, dst_mac, in_port, out_port, packet_in)
-            log.debug("Sending packet to port %i only" % self.mac_port_mapping[msg.match.dl_dst])
-            self.connection.send(msg)
+            self.resend_packet(packet_in, self.mac_port_mapping[dst_mac])
+            log.debug("Sending packet to port %i only" % self.mac_port_mapping[dst_mac])
+            self.install_rule(src_mac, dst_mac, in_port, out_port, packet_in)
         else:
             log.debug("Flooding packet: %s.%i -> %s.%i" % (src_mac, in_port, dst_mac, of.OFPP_ALL))
             self.resend_packet(packet_in, of.OFPP_ALL)
