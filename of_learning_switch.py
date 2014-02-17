@@ -108,7 +108,6 @@ class Tutorial (object):
             log.debug("MAC: %s found in table --> PORT %s" % (dst_mac, self.mac_port_mapping[dst_mac]))
             out_port = self.mac_port_mapping[dst_mac]
             self.install_rule(out_port, packet_in, packet)
-            # self.resend_packet(packet_in, out_port)
         else:
             log.debug("Flooding packet: %s.%i --> %s.%i" % (src_mac, in_port, dst_mac, of.OFPP_FLOOD))
             self.resend_packet(packet_in, of.OFPP_FLOOD)
