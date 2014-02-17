@@ -61,6 +61,7 @@ class Tutorial (object):
         msg.actions.append(action)
 
         # Send message to switch
+        log.debug("Sending packet")
         self.connection.send(msg)
 
     def resend_packet(self, packet_in, out_port):
@@ -70,43 +71,47 @@ class Tutorial (object):
         @param out_port: an int representing the outgoing port on switch
         """
         msg = of.ofp_packet_out()
-        msg.in_port = of.OFPP_NONE
-        msg.actions.append(of.ofp_action_output(port=out_port))
-        msg.buffer_id = packet_in.buffer_id
-        if (out_port != of.OFPP_ALL):
-            log.debug("Sending packet through port %i on the switch" % out_port)
+        msg.data = packet_in.data
+        action = of.ofp_action_output(port=out_port)
+        msg.actions.append(action)
+        if (out_port != of.OFPP_FLOOD):
+            log.debug("Resending packet through port %i on the switch" % out_port)
         self.connection.send(msg)
 
-    def install_rule(self, in_port, packet):
+    def install_rule(self, out_port, packet_in, packet):
         """
         @summary: Once a port of a device is learned, a rule is created
         @param in_port: an int that represents the incoming port on switch
         @param packet: a local copy of the packet that initiated this rule install
         """
         msg = of.ofp_flow_mod()
-        msg.match.dl_src = packet.src
-        msg.match.dl_dst = packet.dst
-        msg.actions.append(of.ofp_action_output(port=in_port))
-        log.debug("Creating a new flow record, MAC %s is connected to PORT %i on the switch" % (str(packet.src), in_port))
+        msg.match = of.ofp_match.from_packet(packet)
+        msg.buffer_id = packet_in.buffer_id
+        action = of.ofp_action_output(port=out_port)
+        msg.actions.append(action)
+        log.debug("Installing a flow entry, MAC: %s is connected to PORT %i" % (str(packet.dst), out_port))
         self.connection.send(msg)
 
     def act_like_switch (self, packet, packet_in):
         """
         @summary: Implement switch-like behavior, learn MAC addresses of peer devices.
         @param packet:  packet.src, packet.dst
-        @param packet_in: packet_in.port, packet_in.buffer_id, packet_in.data
+        @param packet_in: packet_in.in_port, packet_in.buffer_id, packet_in.data
         """
         src_mac = str(packet.src)
         dst_mac = str(packet.dst)
         in_port = packet_in.in_port
+        if not (src_mac in self.mac_port_mapping):
+            log.debug("Adding switch table entry: (MAC: %s is at PORT: %i)" % (src_mac, in_port))
         self.mac_port_mapping[src_mac] = in_port
         if (dst_mac in self.mac_port_mapping):
+            log.debug("MAC: %s found in table --> PORT %s" % (dst_mac, self.mac_port_mapping[dst_mac]))
             out_port = self.mac_port_mapping[dst_mac]
-            self.install_rule(in_port, packet)
-            self.resend_packet(packet_in, out_port)
+            self.install_rule(out_port, packet_in, packet)
+            # self.resend_packet(packet_in, out_port)
         else:
-            log.debug("Flooding packet: %s.%i -> %s.%i" % (src_mac, in_port, dst_mac, of.OFPP_ALL))
-            self.resend_packet(packet_in, of.OFPP_ALL)
+            log.debug("Flooding packet: %s.%i --> %s.%i" % (src_mac, in_port, dst_mac, of.OFPP_FLOOD))
+            self.resend_packet(packet_in, of.OFPP_FLOOD)
 
 def launch ():
     """
