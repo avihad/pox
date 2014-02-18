@@ -65,6 +65,7 @@ class Tutorial (object):
                                                                         str(arp_request.hwsrc)))
 
             if (arp_request.protodst not in self.ip_mac_mapping):
+                msg = of.ofp_packet_out()
                 msg.data = packet.pack()
                 action = of.ofp_action_output(port=of.OFPP_FLOOD)
                 msg.actions.append(action)
@@ -85,7 +86,11 @@ class Tutorial (object):
                                                                                                arp_request.protosrc,
                                                                                                arp_reply.hwsrc,
                                                                                                arp_reply.protosrc))
+
             return msg
+        elif (packet.payload.opcode == arp.REPLY):
+            # TODO: Need to implement this behavior
+
         return None
 
     def construct_arp_reply(self, arp_request):
