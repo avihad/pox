@@ -79,7 +79,7 @@ class Tutorial (object):
                                                                                                arp_reply.protosrc))
         elif arp_request.opcode == arp.REPLY:
             self.ip_mac_mapping[arp_request.protosrc] = arp_request.hwsrc
-            log.debug("Got ARP Request message, adding ARP table entry: (IP: %s MAC: %s)" % (str(arp_request.protosrc),
+            log.debug("Got ARP Reply message, adding ARP table entry: (IP: %s MAC: %s)" % (str(arp_request.protosrc),
                                                                                              str(arp_request.hwsrc)))
 
         return packet_in, packet
