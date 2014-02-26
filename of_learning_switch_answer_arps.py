@@ -58,9 +58,8 @@ class Tutorial (object):
         arp_request = packet.payload
 
         if arp_request.opcode == arp.REQUEST:
-            if arp_request.protosrc not in self.ip_mac_mapping:
-                self.ip_mac_mapping[arp_request.protosrc] = arp_request.hwsrc
-                log.debug("Got ARP Request message, adding ARP table entry: (IP: %s MAC: %s)" % (str(arp_request.protosrc),
+            self.ip_mac_mapping[arp_request.protosrc] = arp_request.hwsrc
+            log.debug("Got ARP Request message, adding ARP table entry: (IP: %s MAC: %s)" % (str(arp_request.protosrc),
                                                                                                  str(arp_request.hwsrc)))
 
             if arp_request.protodst in self.ip_mac_mapping:
