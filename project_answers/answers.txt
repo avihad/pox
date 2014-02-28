@@ -1,0 +1,20 @@
+Question 1: Are there any ARP requests to which you should not answer?
+Question 2: When does a IP-to-MAC mapping entry changes? Should you alert of such a case?
+
+Answer 1:
+If too many (above some defined threshold, for example default 1000 unanswered queries with an average rate of 50 or more per minute)
+ARP requests destined for a node that is not answering thr Proxy ARP should stop replying.
+
+Answer 2:
+The IP-to-MAC mapping could change either if the IP is changed for a given MAC or if a MAC changes and we want the IP to be preserved.
+when a node goes down and up in an interval larger than the DHCP lease time,
+it is reasonable that the same host(MAC) will end up with a different IP address than it held before.
+another situation would be setting a static IP address which is different that was was assigned prior to the change.
+The MAC address of course is a permanent vendor driven address, however, in case a NIC is replaced on a server, it will surly have
+a different MAC address even though we might want the server to have the same IP address.
+another situation that might cause the same behavior is using the "bonding" module, which is essentially a logic interface
+riding on two physical NICS, this mosule uses the feature of "floating MAC" and in case NIC1 is the master now,
+the IP assigned for the server would consist the MAC of the "floating MAC" at the moment, changing the active NIC to be the
+slave one, changes the floating MAC" and the logic device will use the slave's MAC with the sane IP assigned for this server and the
+master NIC.
+
