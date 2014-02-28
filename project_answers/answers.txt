@@ -13,7 +13,7 @@ another situation would be setting a static IP address which is different that w
 The MAC address of course is a permanent vendor driven address, however, in case a NIC is replaced on a server, it will surly have
 a different MAC address even though we might want the server to have the same IP address.
 another situation that might cause the same behavior is using the "bonding" module, which is essentially a logic interface
-riding on two physical NICS, this mosule uses the feature of "floating MAC" and in case NIC1 is the master now,
+riding on two physical NICS, this module uses the feature of "floating MAC" and in case NIC1 is the master now,
 the IP assigned for the server would consist the MAC of the "floating MAC" at the moment, changing the active NIC to be the
 slave one, changes the floating MAC" and the logic device will use the slave's MAC with the sane IP assigned for this server and the
 master NIC.
