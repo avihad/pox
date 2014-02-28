@@ -1,8 +1,12 @@
 """
 OpenFlow Exercise - Sample File
 This code is based on the official OpenFlow tutorial code.
+
+@author: Avihad Menahem ()
+@author: Elad Hayun (066716754)
 """
 
+# Imports
 import pox.openflow.libopenflow_01 as of
 from pox.core import core
 from pox.lib.packet.arp import arp
@@ -20,7 +24,9 @@ class Tutorial (object):
     """
     def __init__ (self, connection):
         """
-        Constructor
+        @summary: Constructor
+        @param connection: A Connection object for that switch
+        @return: void
         """
         self.connection = connection
 
@@ -35,7 +41,9 @@ class Tutorial (object):
 
     def _handle_PacketIn(self, event):
         """
-        Handles packet in messages from the switch.
+        @summary: Handles packet in messages from the switch.
+        @param event: the event invoked
+        @return: void
         """
         packet = event.parsed
 
@@ -53,7 +61,11 @@ class Tutorial (object):
 
     def handle_arp(self, event, packet, packet_in):
         """
-        Constructs an appropriate ARP Reply upon an incoming ARP Request
+        @summary: Constructs an appropriate ARP Reply upon an incoming ARP Request
+        @param event: the event invoked
+        @param packet: the packet that is associated with this OpenFlow event and was sent from the switch to the controller
+        @param packet_in: the OpenFlow container packet descriptor
+        @return: void
         """
         arp_request = packet.payload
 
@@ -85,7 +97,9 @@ class Tutorial (object):
 
     def construct_arp_reply(self, arp_request):
         """
-        Create an ARP Reply message
+        @summary: Create an ARP Reply message
+        @param arp_request: the arp_request packet descriptor
+        @return: arp
         """
         arp_reply = arp()
         arp_reply.hwsrc = self.ip_mac_mapping[arp_request.protodst]
@@ -101,7 +115,12 @@ class Tutorial (object):
 
     def send_packet(self, buffer_id, raw_data, out_port, in_port):
         """
-        Sends a packet out of the specified switch port.
+        @summary: Sends a packet out of the specified switch port
+        @param buffer_id: the unique ID of the packet in the switch (may not be present)
+        @param raw_data: the raw data of the packet (may not be present)
+        @param out_port: the port number on which the packet should be sent on the switch
+        @param in_port: the port number on which the packet arrived at the switch
+        @return: void
         """
         msg = of.ofp_packet_out()
         msg.in_port = in_port
@@ -128,6 +147,7 @@ class Tutorial (object):
         @summary: Resend a packet, this time with a new outgoing port on switch
         @param packet_in: holds information about the incoming packet
         @param out_port: an int representing the outgoing port on switch
+        @return: void
         """
         msg = of.ofp_packet_out()
         msg.data = packet_in.data
@@ -141,6 +161,8 @@ class Tutorial (object):
         """
         @summary: Once a port of a device is learned, a rule is created
         @param packet: a local copy of the packet that initiated this rule install
+        @param out_port: Port where to set the flow entry to
+        @return: void
         """
         msg = of.ofp_flow_mod()
         msg.match = of.ofp_match.from_packet(packet)

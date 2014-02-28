@@ -1,11 +1,16 @@
 """
 OpenFlow Exercise - Sample File
 This code is based on the official OpenFlow tutorial code.
+
+@author: Avihad Menahem ()
+@author: Elad Hayun (066716754)
 """
 
+# Imports
 from pox.core import core
 import pox.openflow.libopenflow_01 as of
 
+# Get the log object
 log = core.getLogger()
 
 class Tutorial (object):
@@ -14,6 +19,11 @@ class Tutorial (object):
     A Connection object for that switch is passed to the __init__ function.
     """
     def __init__ (self, connection):
+        """
+        @summary: Constructor
+        @param connection: A Connection object for that switch
+        @return: void
+        """
         self.connection = connection
 
         # This binds our PacketIn event listener
@@ -24,7 +34,9 @@ class Tutorial (object):
 
     def _handle_PacketIn (self, event):
         """
-        Handles packet in messages from the switch.
+        @summary: Handles packet in messages from the switch.
+        @param event: the event invoked
+        @return: void
         """
 
         packet = event.parsed  # Packet is the original L2 packet sent by the switch
@@ -38,11 +50,12 @@ class Tutorial (object):
 
     def send_packet (self, buffer_id, raw_data, out_port, in_port):
         """
-        Sends a packet out of the specified switch port.
-        If buffer_id is a valid buffer on the switch, use that. Otherwise,
-        send the raw data in raw_data.
-        The "in_port" is the port number that packet arrived on.  Use
-        OFPP_NONE if you're generating this packet.
+        @summary: Sends a packet out of the specified switch port
+        @param buffer_id: the unique ID of the packet in the switch (may not be present)
+        @param raw_data: the raw data of the packet (may not be present)
+        @param out_port: the port number on which the packet should be sent on the switch
+        @param in_port: the port number on which the packet arrived at the switch
+        @return: void
         """
         msg = of.ofp_packet_out()
         msg.in_port = in_port
@@ -69,6 +82,7 @@ class Tutorial (object):
         @summary: Resend a packet, this time with a new outgoing port on switch
         @param packet_in: holds information about the incoming packet
         @param out_port: an int representing the outgoing port on switch
+        @return: void
         """
         msg = of.ofp_packet_out()
         msg.data = packet_in.data
@@ -81,8 +95,9 @@ class Tutorial (object):
     def install_rule(self, out_port, packet_in, packet):
         """
         @summary: Once a port of a device is learned, a rule is created
-        @param in_port: an int that represents the incoming port on switch
         @param packet: a local copy of the packet that initiated this rule install
+        @param out_port: Port where to set the flow entry to
+        @return: void
         """
         msg = of.ofp_flow_mod()
         msg.match = of.ofp_match.from_packet(packet)
