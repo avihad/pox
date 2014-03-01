@@ -1,0 +1,35 @@
+Pox - ARP-Storm:
+
+./graphs/ -
+    Contains two graphs for the comparison of the number of arp msgs before and after implementing
+    the answering arp msg in the controller.
+
+./pcap/ -
+    Contains the pcap and  ps files that represent the packet flowing in all hosts
+    after implementing the learning switch and the arp msgs responder.
+
+./project_answers/ -
+   Contains the answers for the questions asked in the Mininet project.
+
+./of_learning_switch.py -
+    The code implementing the controller port mapping by hosts mac.
+    We added a dictionary mac_port_mapping and update it in every packet that sent in the network,
+    if we know the port of the destination host (by MAC) we install a flow for the packet transfer only for to
+    the specific host, otherwise we flood the packet to all ports.
+
+    Main functions:
+        _handle_PacketIn (self, event) - Handles packet in messages from the switch.
+        act_like_switch (self, packet, packet_in) - Implement switch-like behavior, learn MAC addresses of peer devices.
+        install_rule(self, out_port, packet_in, packet) - Installing a flow entry.
+        resend_packet(self, packet_in, out_port) - Resend a packet, this time with a new outgoing port on switch.
+
+./of_learning_switch_answer_arps.py -
+    The code implementing the controller IP to MAC mapping and the special ARP packet handling.
+    for each packet arrived to the switch we check if it's an ARP msg type then we update the ip_mac_mapping dictionary,
+    in case it was an ARP-Request and we have a match for the requested MAC in our mapping then construct
+    a new ARP-Replay msg if and sent it back to the ARP-Request sender, otherwise act like a switch.
+
+    Main functions:
+        - All the main functions of of_learning_switch.py.
+        handle_arp(self, event, packet, packet_in) - Constructs an appropriate ARP Reply upon an incoming ARP Request.
+        construct_arp_reply(self, arp_request) - Create an ARP Reply message.
